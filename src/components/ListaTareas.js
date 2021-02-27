@@ -1,5 +1,5 @@
 import React from 'react'
-import {firebase} from '../firebase'
+import {dataBase} from '../firebase'
 
 const ListaTareas = () => {
   const [tareas, setTareas] = React.useState([])
@@ -10,7 +10,7 @@ const ListaTareas = () => {
     React.useEffect(() => {
     const obtenerDatos = async () => {
       try {
-        const db = firebase.firestore()
+        const db = dataBase
         const data = await db.collection('tareas').get()
         const arrayData = data.docs.map(doc => ({id: doc.id, ...doc.data()}))
         setTareas(arrayData)
@@ -28,7 +28,7 @@ const ListaTareas = () => {
       return
     }
     try {
-      const db = firebase.firestore()
+      const db = dataBase
       const nuevaTarea = {
         name: tarea,
         fecha: Date.now()
@@ -46,7 +46,7 @@ const ListaTareas = () => {
 
   const eliminar = async (id) => {
     try {
-      const db = firebase.firestore()
+      const db = dataBase
       await db.collection('tareas').doc(id).delete()
 
       const arrayFiltrado = tareas.filter(item => item.id !== id)
@@ -69,7 +69,7 @@ const ListaTareas = () => {
       return
     }
     try {
-      const db =firebase.firestore()
+      const db =dataBase
       await db.collection('tareas').doc(id).update({
         name: tarea
       })

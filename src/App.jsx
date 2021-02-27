@@ -2,6 +2,7 @@ import React from 'react'
 import {BrowserRouter as Router, Switch , Route } from 'react-router-dom'
 import Login from './components/Login'
 import Navbar from './components/Navbar'
+import ListaTarea from './components/ListaTareas'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
           </Route>
           <Route path="/" exact>
             inicio...
+            {/* <ListaTarea/> */}
           </Route>
         </Switch>
       </div>

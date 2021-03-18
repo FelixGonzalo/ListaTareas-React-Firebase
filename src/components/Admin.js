@@ -1,25 +1,26 @@
 import React from 'react'
 import {auth} from '../firebase'
 import {withRouter} from 'react-router-dom'
+import ListaTareas from './ListaTareas'
 
 const Admin = (props) => {
   const [user, setUser] = React.useState(null)
   React.useEffect(() => {
     if (auth.currentUser) {
-      // existe un usuario
+      // existe un usuario activo
       setUser(auth.currentUser)
     } else {
-      // no existe un usuario
+      // no existe un usuario activo
       props.history.push('/login')
     }
   }, [])
   
   return (
     <div>
-      <h2>Ruta protegida</h2>
+      <h2 className="text-center m-4">Lista de tareas</h2>
       {
           user && (
-            <h3>{user.email}</h3>
+            <ListaTareas user={user} />
           )
       }
     </div>

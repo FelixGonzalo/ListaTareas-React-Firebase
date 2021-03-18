@@ -13,12 +13,9 @@ const Navbar = (props) => {
   
   return (
     <div className="navbar navbar-dark bg-dark">
-      <Link className="navbar-brand" to="/">AUTH</Link>
+      <Link className="navbar-brand" to="/">Lista de Tareas</Link>
       <div>
         <div className="d-flex">
-          <NavLink className="btn btn-dark mr-2" to="/" exact>
-            Inicio
-          </NavLink>
           {
             props.firebaseUser !== null ? (
               <NavLink className="btn btn-dark mr-2" to="/admin">

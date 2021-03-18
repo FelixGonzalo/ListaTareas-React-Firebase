@@ -1,25 +1,44 @@
 import React from 'react'
 import {dataBase} from '../firebase'
+import dayjs from 'dayjs'
 
-const ListaTareas = () => {
+const ListaTareas = (props) => {
   const [tareas, setTareas] = React.useState([])
   const [tarea, setTarea] = React.useState('')
   const [modoEdicion, setModoEdicion] = React.useState(false)
   const [id, setId] = React.useState('')
+  //paginacion ver más
+  const [ultimaTareaVermas, setUltimaTareaVermas] = React.useState(null)
+  const [desactivarVermas, setDesactivarVermas] = React.useState(true)
 
-    React.useEffect(() => {
-    const obtenerDatos = async () => {
+  React.useEffect(() => {
+    listar()
+  }, [])
+
+  const listar = async () => {
       try {
-        const db = dataBase
-        const data = await db.collection('tareas').get()
+        const data = await dataBase.collection(props.user.uid)
+          .limit(4)
+          .orderBy('fecha', 'desc')
+          .get()
         const arrayData = data.docs.map(doc => ({id: doc.id, ...doc.data()}))
+        setUltimaTareaVermas(data.docs[data.docs.length - 1])
         setTareas(arrayData)
+
+        const query = await dataBase.collection(props.user.uid)
+          .limit(4)
+          .orderBy('fecha', 'desc')
+          .startAfter(data.docs[data.docs.length - 1])
+          .get()
+        if (query.empty) {
+          setDesactivarVermas(true)
+        } else {
+          setDesactivarVermas(false)
+        }
       } catch (error) {
         console.log(error)
       }
     }
-    obtenerDatos()
-  }, [])
 
   const agregar = async (e) => {
     e.preventDefault()
@@ -28,12 +47,11 @@ const ListaTareas = () => {
       return
     }
     try {
-      const db = dataBase
       const nuevaTarea = {
         name: tarea,
         fecha: Date.now()
       }
-      const data = await db.collection('tareas').add(nuevaTarea)
+      const data = await dataBase.collection(props.user.uid).add(nuevaTarea)
       setTareas([
         ...tareas,
         {...nuevaTarea, id: data.id}
@@ -46,8 +64,7 @@ const ListaTareas = () => {
 
   const eliminar = async (id) => {
     try {
-      const db = dataBase
-      await db.collection('tareas').doc(id).delete()
+      await dataBase.collection(props.user.uid).doc(id).delete()
 
       const arrayFiltrado = tareas.filter(item => item.id !== id)
       setTareas(arrayFiltrado)
@@ -69,8 +86,7 @@ const ListaTareas = () => {
       return
     }
     try {
-      const db =dataBase
-      await db.collection('tareas').doc(id).update({
+      await dataBase.collection(props.user.uid).doc(id).update({
         name: tarea
       })
       const arrayEditado = tareas.map(item => (
@@ -85,31 +101,39 @@ const ListaTareas = () => {
     }
   }
 
+  const vermas = async () => {
+    try {
+      const data = await dataBase.collection(props.user.uid)
+        .limit(4)
+        .orderBy('fecha', 'desc')
+        .startAfter(ultimaTareaVermas)
+        .get()
+      const arrayData = data.docs.map(doc => ({id: doc.id, ...doc.data()}))
+      setTareas([
+        ...tareas,
+        ...arrayData
+      ])
+      setUltimaTareaVermas(data.docs[data.docs.length - 1])
+
+      const query = await dataBase.collection(props.user.uid)
+          .limit(4)
+          .orderBy('fecha', 'desc')
+          .startAfter(data.docs[data.docs.length - 1])
+          .get()
+      if (query.empty) {
+        setDesactivarVermas(true)
+      } else {
+        setDesactivarVermas(false)
+      }
+    } catch (error) {
+      console.log(error)
+    }
+    
+  }
+
     return (
     <div className="container mt-3">
       <div className="row">
-        <div className="col-md-6">
-          <ul className="list-group">
-            {
-              tareas.map(item => (
-                <li className="list-group-item" key={item.id}>
-                  {item.name}
-                  <button className="btn btn-danger btn-sm float-right"
-                    onClick={() => eliminar(item.id)}
-                  >
-                    Eliminar
-                  </button>
-                  <button 
-                    className="btn btn-warning btn-sm float-right mr-2"
-                    onClick={() => activarEdicion(item)}
-                  >
-                    Editar
-                  </button>
-                </li>
-              ))
-            }
-          </ul>
-        </div>
         <div className="col-md-6">
           <h3>
             {
@@ -126,7 +150,7 @@ const ListaTareas = () => {
             />
             <button
               className={
-                modoEdicion ? 'btn btn-warning btn-block' : 'btn btn-dark btn-block'
+                modoEdicion ? 'btn btn-warning btn-block mb-4' : 'btn btn-dark btn-block mb-4'
               }
               type="submit"
             >
@@ -135,6 +159,45 @@ const ListaTareas = () => {
             }
             </button>
           </form>
+        </div>
+        <div className="col-md-6">
+          <button 
+            className="btn btn-dark btn-sm mb-2"
+            onClick={() => listar()}
+            type="button"
+          >
+            Actualizar
+          </button>
+          <ul className="list-group">
+            {
+              tareas.map(item => (
+                <li className="list-group-item" key={item.id}>
+                  {item.name}
+                  <hr/> 
+                  { dayjs(item.fecha).format("DD/MM/YYYY HH:mm") }
+                  <button className="btn btn-danger btn-sm float-right"
+                    onClick={() => eliminar(item.id)}
+                  >
+                    Eliminar
+                  </button>
+                  <button 
+                    className="btn btn-warning btn-sm float-right mr-2"
+                    onClick={() => activarEdicion(item)}
+                  >
+                    Editar
+                  </button>
+                </li>
+              ))
+            }
+          </ul>
+          <button 
+            className="btn btn-dark btn-sm m-2 float-right"
+            onClick={() => vermas()}
+            disabled={desactivarVermas}
+            type="button"
+          >
+            Ver más...
+          </button>
         </div>
       </div>
     </div>

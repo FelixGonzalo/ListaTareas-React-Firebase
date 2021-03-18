@@ -1,11 +1,12 @@
+import './app.css'
 import React from 'react'
 import {BrowserRouter as Router, Switch , Route } from 'react-router-dom'
 import Login from './components/Login'
 import Navbar from './components/Navbar'
-import ListaTarea from './components/ListaTareas'
 import Admin from './components/Admin'
 
 import {auth} from './firebase'
+import Reset from './components/Reset'
 
 function App() {
 
@@ -33,15 +34,14 @@ function App() {
           <Route path="/admin">
             <Admin/>
           </Route>
-          <Route path="/" exact>
-            inicio...
-            {/* <ListaTarea/> */}
+          <Route path="/reset">
+            <Reset/>
           </Route>
         </Switch>
       </div>
     </Router>
   ) : (
-    <p>Cargando...</p>
+    <p className="app-cargando">Cargando </p>
   )
 }
 

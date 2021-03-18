@@ -7,7 +7,14 @@ const Login = (props) => {
   const [email, setEmail] = React.useState('')
   const [pass, setPass] = React.useState('')
   const [error, setError] = React.useState(null)
-  const [esRegistro, setEsRegistro] = React.useState(true)
+  const [esRegistro, setEsRegistro] = React.useState(false)
+
+  React.useEffect(() => {
+    if (auth.currentUser) {
+      // si existe un usuario activo
+      props.history.push('/admin')
+    }
+  }, [])
 
   const procesarDatos = e => {
     e.preventDefault()
@@ -24,6 +31,7 @@ const Login = (props) => {
       return
     }
     // datos correctos
+    setError(null)
     if (esRegistro) {
       registrar()
     } else {
@@ -36,7 +44,6 @@ const Login = (props) => {
       const res = await auth.signInWithEmailAndPassword(email,pass)
       setEmail('')
       setPass('')
-      setError(null)
       props.history.push('/admin')
     } catch (error) {
       console.log(error.code)
@@ -64,9 +71,12 @@ const Login = (props) => {
         email: res.user.email,
         uid: res.user.uid
       })
+      await dataBase.collection(res.user.uid).add({
+        name: 'Tarea de ejemplo',
+        fecha: Date.now()
+      })
       setEmail('')
       setPass('')
-      setError(null)
       props.history.push('/admin')
     } catch (error) {
       console.log(error.code)
@@ -118,6 +128,17 @@ const Login = (props) => {
             >
               {esRegistro ? '¿Ya tienes cuenta?' : '¿No tienes cuenta?'}
             </button>
+            {
+              !esRegistro ? (
+                <button
+                  className="btn btn-lg btn-danger btn-sm mt-2"
+                  type="button"
+                  onClick={()=> props.history.push('/reset')}
+                >
+                  Recuperar contraseña
+                </button>
+              ) : null
+            }
           </form>
         </div>
       </div>
